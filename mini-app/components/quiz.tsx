@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 
@@ -57,39 +57,68 @@ const questions: Question[] = [
 export default function Quiz() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [shuffled, setShuffled] = useState<Question[]>([]);
+  const [lives, setLives] = useState(3);
+  const [score, setScore] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
 
-  // Shuffle questions by difficulty, keeping easier ones first
-  useState(() => {
+  useEffect(() => {
     const sorted = [...questions].sort((a, b) => a.difficulty - b.difficulty);
     setShuffled(sorted);
-  });
+  }, []);
 
   const current = shuffled[currentIndex];
 
   const handleAnswer = (choice: string) => {
     if (!current) return;
     if (choice === current.answer) {
+      setScore(score + 1);
       if (currentIndex < shuffled.length - 1) {
         setCurrentIndex(currentIndex + 1);
       } else {
-        // Completed all questions
         alert("Congratulations! You completed the quiz.");
         setCurrentIndex(0);
+        setScore(0);
+        setLives(3);
       }
     } else {
-      alert("Wrong answer. Starting over.");
-      setCurrentIndex(0);
+      const newLives = lives - 1;
+      setLives(newLives);
+      if (newLives <= 0) {
+        setGameOver(true);
+      } else {
+        alert(`Wrong answer. Lives left: ${newLives}`);
+      }
     }
   };
 
+  if (gameOver) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <h2 className="text-xl font-semibold">Game Over</h2>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4">Thanks for playing! Your score: {score}</p>
+          <Button onClick={() => { setGameOver(false); setLives(3); setScore(0); setCurrentIndex(0); }}>Restart</Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!current) return null;
+
+  const progress = ((currentIndex) / shuffled.length) * 100;
 
   return (
     <Card className="w-full max-w-md">
+      <div className="w-full h-2 bg-gray-200 rounded">
+        <div className="h-full bg-primary rounded" style={{ width: `${progress}%` }} />
+      </div>
       <CardHeader>
         <h2 className="text-xl font-semibold">
           Question {currentIndex + 1} of {shuffled.length}
         </h2>
+        <p className="text-sm text-muted-foreground">Lives: {lives}</p>
       </CardHeader>
       <CardContent>
         <p className="mb-4">{current.text}</p>
