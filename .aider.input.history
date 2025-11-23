@@ -34,3 +34,21 @@
 +
 +Add a thanks for playing with their score at game over screen 
 +
+
+# 2025-11-23 04:05:17.023033
++Ok replace the “lives: number” with 3 love heart emojis 
++
++Instead of popup modal for congratulations have confetti effect 
++
++After finishing the first level, move to send level which is more difficult . Add more questions
++
++Have 5 levels total with 5 questions each level that get progressively more difficult 
+
+# 2025-11-23 04:05:17.032322
++Ok replace the “lives: number” with 3 love heart emojis 
++
++Instead of popup modal for congratulations have confetti effect 
++
++After finishing the first level, move to send level which is more difficult . Add more questions
++
++Have 5 levels total with 5 questions each level that get progressively more difficult 
