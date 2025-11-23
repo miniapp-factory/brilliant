@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import confetti from 'canvas-confetti';
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 
 type Question = {
@@ -56,29 +57,115 @@ const questions: Question[] = [
 
 export default function Quiz() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [shuffled, setShuffled] = useState<Question[]>([]);
+  const [levelIndex, setLevelIndex] = useState(0);
+  const [shuffledLevels, setShuffledLevels] = useState<Question[][]>([]);
   const [lives, setLives] = useState(3);
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
 
   useEffect(() => {
-    const sorted = [...questions].sort((a, b) => a.difficulty - b.difficulty);
-    setShuffled(sorted);
+    const levels: Question[][] = [
+      [questions[0], questions[1], questions[0], questions[1], questions[0]],
+      [questions[2], questions[3], questions[2], questions[3], questions[2]],
+      [questions[4], questions[5], questions[4], questions[5], questions[4]],
+      [
+        {
+          text: "What is the largest planet in our solar system?",
+          options: ["Jupiter", "Saturn", "Neptune", "Earth"],
+          answer: "Jupiter",
+          difficulty: 4,
+        },
+        {
+          text: "What is the chemical symbol for gold?",
+          options: ["Au", "Ag", "Fe", "Cu"],
+          answer: "Au",
+          difficulty: 4,
+        },
+        {
+          text: "What is the speed of sound in air?",
+          options: ["343 m/s", "330 m/s", "300 m/s", "400 m/s"],
+          answer: "343 m/s",
+          difficulty: 4,
+        },
+        {
+          text: "What is the capital of France?",
+          options: ["Paris", "London", "Berlin", "Rome"],
+          answer: "Paris",
+          difficulty: 4,
+        },
+        {
+          text: "What is the formula for water?",
+          options: ["H2O", "CO2", "NaCl", "O2"],
+          answer: "H2O",
+          difficulty: 4,
+        },
+      ],
+      [
+        {
+          text: "What is the theory of relativity?",
+          options: ["E=mc^2", "F=ma", "V=IR", "pV=nRT"],
+          answer: "E=mc^2",
+          difficulty: 5,
+        },
+        {
+          text: "What is the integral of sin(x)?",
+          options: ["-cos(x)", "cos(x)", "sin(x)", "-sin(x)"],
+          answer: "-cos(x)",
+          difficulty: 5,
+        },
+        {
+          text: "What is the value of Planck's constant?",
+          options: ["6.626e-34", "9.81", "3.14", "1.6e-19"],
+          answer: "6.626e-34",
+          difficulty: 5,
+        },
+        {
+          text: "What is the name of the first man on the moon?",
+          options: ["Neil Armstrong", "Buzz Aldrin", "Yuri Gagarin", "Michael Collins"],
+          answer: "Neil Armstrong",
+          difficulty: 5,
+        },
+        {
+          text: "What is the largest ocean on Earth?",
+          options: ["Pacific Ocean", "Atlantic Ocean", "Indian Ocean", "Arctic Ocean"],
+          answer: "Pacific Ocean",
+          difficulty: 5,
+        },
+      ],
+    ];
+
+    const shuffled = levels.map((level) => {
+      const copy = [...level];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    });
+
+    setShuffledLevels(shuffled);
   }, []);
 
-  const current = shuffled[currentIndex];
+  const currentLevel = shuffledLevels[levelIndex] || [];
+  const current = currentLevel[currentIndex];
 
   const handleAnswer = (choice: string) => {
     if (!current) return;
     if (choice === current.answer) {
       setScore(score + 1);
-      if (currentIndex < shuffled.length - 1) {
+      if (currentIndex < 4) {
         setCurrentIndex(currentIndex + 1);
       } else {
-        alert("Congratulations! You completed the quiz.");
-        setCurrentIndex(0);
-        setScore(0);
-        setLives(3);
+        if (levelIndex < shuffledLevels.length - 1) {
+          setLevelIndex(levelIndex + 1);
+          setCurrentIndex(0);
+        } else {
+          confetti();
+          setCurrentIndex(0);
+          setScore(0);
+          setLives(3);
+          setLevelIndex(0);
+        }
       }
     } else {
       const newLives = lives - 1;
@@ -107,7 +194,7 @@ export default function Quiz() {
 
   if (!current) return null;
 
-  const progress = ((currentIndex) / shuffled.length) * 100;
+  const progress = ((levelIndex * 5 + currentIndex) / 25) * 100;
 
   return (
     <Card className="w-full max-w-md">
@@ -118,7 +205,7 @@ export default function Quiz() {
         <h2 className="text-xl font-semibold">
           Question {currentIndex + 1} of {shuffled.length}
         </h2>
-        <p className="text-sm text-muted-foreground">Lives: {lives}</p>
+        <p className="text-sm text-muted-foreground">{Array(lives).fill('❤️').join('')}</p>
       </CardHeader>
       <CardContent>
         <p className="mb-4">{current.text}</p>
